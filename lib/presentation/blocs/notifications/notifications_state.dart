@@ -6,7 +6,7 @@ class NotificationsState extends Equatable {
   final List<dynamic> notifications;
 
   const NotificationsState({
-    this.status = AuthorizationStatus.notDetermined,
+    this.status = AuthorizationStatus.notDetermined, // estado inicial
     this.notifications = const [],
   });
 
