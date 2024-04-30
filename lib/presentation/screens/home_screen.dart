@@ -33,7 +33,8 @@ class _HomeView extends StatelessWidget {
         title: const Text('Notificación'),
         subtitle: const Text('Descripción de la notificación'),
         trailing: IconButton(
-          icon: const Icon(Icons.notifications),
+          icon: const Icon(
+            Icons.notifications),
           onPressed: () {
           }
         ),
