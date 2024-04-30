@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "827983270705",
+    "project_id": "prueba-f2fe6",
+    "storage_bucket": "prueba-f2fe6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827983270705:android:314e9b8e6c0fd51ac85610",
+        "android_client_info": {
+          "package_name": "com.anyelec.push_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4Hh9UES2OT0DsUtFKl0W1fFBpJTB5Ujs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

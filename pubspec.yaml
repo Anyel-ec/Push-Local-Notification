@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   equatable: ^2.0.5
+  firebase_core: ^2.30.1
   firebase_messaging: ^14.9.1
   flutter:
     sdk: flutter

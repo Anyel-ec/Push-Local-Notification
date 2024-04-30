@@ -1,4 +1,4 @@
-package com.example.push_local_notification
+package com.anyelec.push_app
 
 import io.flutter.embedding.android.FlutterActivity
 
