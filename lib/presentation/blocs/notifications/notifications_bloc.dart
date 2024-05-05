@@ -12,7 +12,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       .instance; // nivel global para acceder a la instancia de firebase
 
   NotificationsBloc() : super(const NotificationsState()) { 
+
     on<NotificationStatusChanged>(_notificationStatusChanged);
+
+    _initianStatusCheck(); // acceso a los settings de las notificaciones
+    _getFCMToken(); // obtener el token de notificaciones
   }
 
   static Future<void> initialFirebaseNotifications() async {
@@ -25,6 +29,30 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     //emitir el nuevo estado
     emit(state.copyWith(status: event.status));
   }
+
+  void _initianStatusCheck() async {
+    final setting = await messaging.getNotificationSettings();
+    add (NotificationStatusChanged(setting.authorizationStatus)); // obtener el estado de las notificaciones
+    _getFCMToken(); // obtener el token de notificaciones
+    /*
+    un usuario tiene múltiples tokens de notificaciones
+        cyberdevmatrix: [
+            token1, token2, token3
+        ]
+    */
+  }
+
+
+  // obtener el token de notificaciones
+  void _getFCMToken() async {
+        final setting = await messaging.getNotificationSettings();
+        
+        if (setting.authorizationStatus == AuthorizationStatus.authorized) {
+          String? token = await messaging.getToken();
+          print('Token: $token');
+        }
+
+     }
 
   // un metodo del bloc
   void requestPermission() async {
@@ -39,5 +67,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     );
 
     add(NotificationStatusChanged(settings.authorizationStatus));
+    
+
   }
 }
