@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:push_local_notification/domain/entities/push_message.dart';
 import 'package:push_local_notification/firebase_options.dart';
 
 part 'notifications_event.dart';
@@ -51,12 +54,21 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   void _handleRemoteMessage(RemoteMessage message) {
-    print('Notification: ${message.notification?.title}');
-    print('Notification: ${message.notification?.body}');
-
+ 
     if (message.notification == null) return;
 
-    print ('Notification: ${message.notification?.title}');
+    final notification = PushMessage(
+        messageId: message.messageId?.replaceAll(':', '').replaceAll('%', '') ?? '', // quitamos el : y el %
+        sentDate: message.sentTime ?? DateTime.now(),
+         title: message.notification!.title ?? '', 
+         body: message.notification!.body ?? '',
+         data: message.data,
+         imageUrl: Platform.isAndroid 
+            ?   message.notification!.android?.imageUrl ??'' // imagen de la notificación
+            :   message.notification!.apple?.imageUrl ?? ''
+    );
+
+    print(notification); // mostrar la notificación, llamamos el toString
   }
 
 
