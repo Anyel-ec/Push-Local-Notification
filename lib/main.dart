@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:push_local_notification/config/router/app_router.dart';
@@ -7,6 +8,7 @@ import 'package:push_local_notification/presentation/blocs/notifications/notific
 import 'firebase_options.dart';
 
 void main() async {
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler); // manejar las notificaciones en segundo plano
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationsBloc.initialFirebaseNotifications(); // inicializar firebase
 
