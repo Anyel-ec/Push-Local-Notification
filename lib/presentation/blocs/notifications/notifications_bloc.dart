@@ -15,92 +15,106 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
 }
 
-
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
-  FirebaseMessaging messaging = FirebaseMessaging
-      .instance; // nivel global para acceder a la instancia de firebase
 
-  NotificationsBloc() : super(const NotificationsState()) {
-    on<NotificationStatusChanged>(_notificationStatusChanged);
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-    _initianStatusCheck(); // acceso a los settings de las notificaciones --verifica el estado de las notificaciones
-    _getFCMToken(); // obtener el token de notificaciones
-    _onForegroundMessage(); // cuando la persona tenga la app abierta
+
+  NotificationsBloc() : super( const NotificationsState() ) {
+
+    on<NotificationStatusChanged>( _notificationStatusChanged );
+    on<NotificationReceived>( _onPushMessageReceived );
+
+    // Verificar estado de las notificaciones
+    _initialStatusCheck();
+
+    // Listener para notificaciones en Foreground
+    _onForegroundMessage();
   }
 
-  static Future<void> initialFirebaseNotifications() async {
+  static Future<void> initializeFCM() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
 
-  void _notificationStatusChanged(
-      NotificationStatusChanged event, Emitter<NotificationsState> emit) {
-    //emitir el nuevo estado
-    emit(state.copyWith(status: event.status));
+  void _notificationStatusChanged( NotificationStatusChanged event, Emitter<NotificationsState> emit ) {
+    emit(
+      state.copyWith(
+        status: event.status
+      )
+    );
+    _getFCMToken();
+  }
+  
+  void _onPushMessageReceived( NotificationReceived event, Emitter<NotificationsState> emit ) {
+    emit(
+      state.copyWith(
+        notifications: [ event.pushMessage, ...state.notifications ]
+      )
+    );
   }
 
-  void _initianStatusCheck() async {
-    final setting = await messaging.getNotificationSettings();
-    add(NotificationStatusChanged(setting
-        .authorizationStatus)); // obtener el estado de las notificaciones
-    _getFCMToken(); // obtener el token de notificaciones
-    /*
-    un usuario tiene múltiples tokens de notificaciones
-        cyberdevmatrix: [
-            token1, token2, token3
-        ]
-    */
+
+  void _initialStatusCheck() async {
+    final settings = await messaging.getNotificationSettings();
+    add( NotificationStatusChanged(settings.authorizationStatus) );
   }
 
-  void _handleRemoteMessage(RemoteMessage message) {
- 
+  void _getFCMToken() async {
+    
+    if ( state.status != AuthorizationStatus.authorized ) return;
+  
+    final token = await messaging.getToken();
+    print(token);
+  }
+
+  void handleRemoteMessage( RemoteMessage message ) {
     if (message.notification == null) return;
-
+    
     final notification = PushMessage(
-        messageId: message.messageId?.replaceAll(':', '').replaceAll('%', '') ?? '', // quitamos el : y el %
-        sentDate: message.sentTime ?? DateTime.now(),
-         title: message.notification!.title ?? '', 
-         body: message.notification!.body ?? '',
-         data: message.data,
-         imageUrl: Platform.isAndroid 
-            ?   message.notification!.android?.imageUrl ??'' // imagen de la notificación
-            :   message.notification!.apple?.imageUrl ?? ''
+      messageId: message.messageId
+        ?.replaceAll(':', '').replaceAll('%', '')
+        ?? '',
+      title: message.notification!.title ?? '',
+      body: message.notification!.body ?? '',
+      sentDate: message.sentTime ?? DateTime.now(),
+      data: message.data,
+      imageUrl: Platform.isAndroid
+        ? message.notification!.android?.imageUrl
+        : message.notification!.apple?.imageUrl
     );
 
-    print(notification); // mostrar la notificación, llamamos el toString
+    add( NotificationReceived(notification) );
+    
+  }
+
+  void _onForegroundMessage(){ 
+    FirebaseMessaging.onMessage.listen(handleRemoteMessage);
   }
 
 
-  void _onForegroundMessage() { // cuando la persona tenga la app abierta
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) { // escuchar los mensajes, siempre escuchandoi 
-      _handleRemoteMessage(message); // mostrar el mensaje
-    });
-   
-  }
 
-  // obtener el token de notificaciones
-  void _getFCMToken() async {
-    final setting = await messaging.getNotificationSettings();
-
-    if (setting.authorizationStatus == AuthorizationStatus.authorized) {
-      String? token = await messaging.getToken();
-      print('Token: $token');
-    }
-  }
-
-  // un metodo del bloc
   void requestPermission() async {
+    
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
       carPlay: false,
-      criticalAlert: true, // alerta crítica
+      criticalAlert: true,
       provisional: false,
       sound: true,
     );
 
-    add(NotificationStatusChanged(settings.authorizationStatus));
+    add( NotificationStatusChanged(settings.authorizationStatus) );
   }
+
+  PushMessage? getMessageById( String pushMessageId ) {
+    final exist = state.notifications.any((element) => element.messageId == pushMessageId );
+    if ( !exist ) return null;
+
+    return state.notifications.firstWhere((element) => element.messageId == pushMessageId );
+  }
+
 }
