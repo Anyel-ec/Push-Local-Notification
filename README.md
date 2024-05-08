@@ -9,7 +9,7 @@ This project is designed to implement push notifications using Firebase Cloud Me
 
 ## Result
 ### Firebase Notification
-![Alt text](docs/fireabase.PNG) 
+![Alt text](docs/firebase.PNG) 
 ### Notification
 ![Alt text](docs/notification.png) 
 ### Home Screen
